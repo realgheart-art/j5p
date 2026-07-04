@@ -197,6 +197,48 @@ table.lc .newcol{background:#f4f4f4}
 .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:12px 20px;border-radius:10px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.25s;font-size:14px;z-index:80;border-left:3px solid var(--brass)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ---------- Presentation mode ---------- */
+.pres{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;
+  background:radial-gradient(1000px 600px at 50% -10%,rgba(176,137,79,.18),transparent 60%),linear-gradient(180deg,#0d1b2e,#12243b)}
+.pres.open{display:flex}
+.pres-bar{display:flex;align-items:center;gap:12px;padding:14px 20px;color:#cdd8ea;font-size:14px}
+.pres-bar .spacer{margin-left:auto}
+.pres-x{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);color:#fff;width:36px;height:36px;border-radius:9px;cursor:pointer;font-size:16px}
+.pres-x:hover{background:rgba(255,255,255,.2)}
+.pres-stage{flex:1;overflow:auto;padding:0 78px 34px;display:flex;justify-content:center}
+.pres-arrow{position:fixed;top:50%;transform:translateY(-50%);z-index:91;width:52px;height:52px;border-radius:50%;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:28px;cursor:pointer;line-height:1}
+.pres-arrow:hover{background:var(--brass);color:var(--navy);border-color:var(--brass)}
+.pres-arrow.left{left:18px}.pres-arrow.right{right:18px}
+.ps{background:#fff;width:100%;max-width:1000px;border-radius:16px;padding:30px 34px;box-shadow:0 20px 60px rgba(0,0,0,.4);align-self:flex-start}
+.ps-head{display:flex;gap:22px;align-items:center;border-bottom:3px solid var(--brass);padding-bottom:18px;margin-bottom:18px}
+.ps-photo{width:120px;height:150px;object-fit:cover;border-radius:12px;border:1px solid var(--line);flex:0 0 auto}
+.ps-photo.ph{display:grid;place-items:center;font-family:"Fraunces";font-size:44px;color:#fff;background:linear-gradient(140deg,var(--navy),var(--navy-soft));border:none}
+.ps-head .nm{font-family:"Fraunces";font-size:30px;font-weight:600;color:var(--navy);margin:0 0 6px;line-height:1.1}
+.ps-head .meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ps-tag{background:#e6edf7;color:var(--navy);font-weight:700;border-radius:8px;padding:5px 12px;font-size:15px}
+.ps-tag.brass{background:var(--brass-soft);color:#6b4e17}
+.ps-sub{color:var(--ink-soft);font-size:14px;margin-top:8px}
+.ps-cad{background:linear-gradient(180deg,#fff9ec,#fff3d6);border:1px solid var(--brass);border-radius:12px;padding:16px 18px;margin-bottom:18px}
+.ps-cad .lab{font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--brass);font-weight:700;margin-bottom:8px}
+.ps-cad .big{font-family:"Fraunces";font-size:23px;font-weight:600;color:var(--navy);line-height:1.25}
+.ps-cad .row2{display:flex;gap:26px;flex-wrap:wrap;margin-top:10px;font-size:15px;color:#3a4657}
+.ps-cad .row2 b{color:var(--navy)}
+.ps-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.ps-card{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.ps-card .h{background:var(--navy);color:#fff;font-family:"Fraunces";font-size:14px;font-weight:600;padding:8px 14px}
+.ps-card .b{padding:12px 14px;font-size:14.5px;line-height:1.6}
+.ps-kv{display:grid;grid-template-columns:150px 1fr;gap:5px 12px;margin:0}
+.ps-kv dt{color:var(--ink-soft)}
+.ps-kv dd{margin:0;font-weight:600;color:#1c2836}
+.reorder{display:inline-flex;gap:4px}
+.reorder button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer;font-size:15px;font-weight:700}
+.reorder button:hover{border-color:var(--brass);background:#fff9ec}
+.reorder button:disabled{opacity:.35;cursor:not-allowed}
+.posbadge{font-size:12px;color:var(--ink-soft);align-self:center;margin-right:6px}
+@media (max-width:820px){.ps-grid{grid-template-columns:1fr}.pres-stage{padding:0 16px 24px}.pres-arrow{width:42px;height:42px;font-size:22px}}
+@media print{body.printing .pres{display:none!important}}
+
 #printArea{display:none}
 @media print{
   body.printing{background:#fff}
@@ -255,6 +297,7 @@ table.lc .newcol{background:#f4f4f4}
     <button class="btn ghost sm" id="cfgBtn" type="button">⚙︎ Tetapan Lampiran C</button>
     <button class="btn brass sm" id="lampCBtn" type="button">📋 Lampiran C (Gabungan)</button>
     <button class="btn brass sm" id="lampCIndBtn" type="button">📋 Lampiran C (Individu)</button>
+    <button class="btn brass sm" id="presBtn" type="button">🎤 Pembentangan</button>
     <button class="btn ghost sm" id="printAllBtn" type="button">🖨️ Semua Resume</button>
     <button class="btn ghost sm" id="clearBtn" type="button">Kosongkan</button>
   </div>
@@ -290,6 +333,18 @@ table.lc .newcol{background:#f4f4f4}
 
 <div id="printArea"></div>
 <div class="toast" id="toast"></div>
+
+<div class="pres" id="pres">
+  <div class="pres-bar">
+    <span id="presMeta"></span>
+    <span class="spacer"></span>
+    <span id="presCount"></span>
+    <button class="pres-x" onclick="closePres()" title="Tutup (Esc)">✕</button>
+  </div>
+  <button class="pres-arrow left" onclick="presNav(-1)" title="Sebelum (←)">‹</button>
+  <div class="pres-stage" id="presStage"></div>
+  <button class="pres-arrow right" onclick="presNav(1)" title="Seterus (→)">›</button>
+</div>
 
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
@@ -495,7 +550,7 @@ function fldCore(label,val,id,key){
   return`<div class="field"><label>${label}</label><input type="text" value="${esc(val)}" oninput="setCore(${id},'${key}',this.value)"></div>`;
 }
 function renderCards(){
-  $('#cards').innerHTML=officers.map((o)=>{
+  $('#cards').innerHTML=officers.map((o,idx)=>{
     const L=o.lc;
     const photo=o.photo?`<img class="photo" src="${o.photo}" alt="Foto ${esc(o.nama)}">`:`<div class="photo ph">${esc(initials(o.nama))}</div>`;
     const badge=o.photoAuto?'Gambar diekstrak dari PDF':(o.photo?'Gambar dimuat naik':'Tiada gambar dikesan');
@@ -567,9 +622,15 @@ function renderCards(){
       </div>
 
       <div class="actions">
-        <button class="btn ghost sm" onclick="toggleResume(${o.id})" id="tgl${o.id}">Lihat Resume Penuh</button>
+        <span class="reorder">
+          <button onclick="moveOfficer(${o.id},-1)" title="Naik" ${idx===0?'disabled':''}>↑</button>
+          <button onclick="moveOfficer(${o.id},1)" title="Turun" ${idx===officers.length-1?'disabled':''}>↓</button>
+        </span>
+        <span class="posbadge">Kedudukan&nbsp;#${idx+1}</span>
+        <button class="btn ghost sm" onclick="toggleResume(${o.id})" id="tgl${o.id}">Resume</button>
         <button class="btn ghost sm" onclick="removeOfficer(${o.id})">Buang</button>
         <div class="spacer"></div>
+        <button class="btn ghost sm" onclick="startPresentation(${o.id})">🎤 Pembentangan</button>
         <button class="btn ghost sm" onclick="printOfficer(${o.id})">🖨️ Resume PDF</button>
         <button class="btn brass sm" onclick="openLCOne(${o.id})">📋 Lampiran C</button>
       </div>
@@ -825,6 +886,88 @@ window.onafterprint=()=>document.body.classList.remove('printing');
 
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600);}
 
+function moveOfficer(id,dir){const i=officers.findIndex(x=>x.id===id);const j=i+dir;if(i<0||j<0||j>=officers.length)return;const t=officers[i];officers[i]=officers[j];officers[j]=t;render();}
+
+/* ============================================================ PEMBENTANGAN ============================================================ */
+let presIndex=0;
+function startPresentation(id){
+  if(!officers.length){toast('Tiada pegawai.');return;}
+  const i=(id!=null)?officers.findIndex(x=>x.id===id):0;
+  presIndex=i<0?0:i;
+  $('#pres').classList.add('open');
+  document.addEventListener('keydown',presKey);
+  renderPres();
+}
+function renderPres(){
+  const o=officers[presIndex];if(!o)return;
+  $('#presStage').innerHTML=presSlide(o);
+  $('#presStage').scrollTop=0;
+  $('#presCount').textContent=`Pegawai ${presIndex+1} / ${officers.length}`;
+  $('#presMeta').textContent=mesyLabel()||'Pembentangan J5P · JPN Kedah';
+  document.querySelector('.pres-arrow.left').style.visibility=presIndex>0?'visible':'hidden';
+  document.querySelector('.pres-arrow.right').style.visibility=presIndex<officers.length-1?'visible':'hidden';
+}
+function presNav(dir){const n=presIndex+dir;if(n<0||n>=officers.length)return;presIndex=n;renderPres();}
+function closePres(){$('#pres').classList.remove('open');document.removeEventListener('keydown',presKey);}
+function presKey(e){
+  if(!$('#pres').classList.contains('open'))return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '){e.preventDefault();presNav(1);}
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){e.preventDefault();presNav(-1);}
+  else if(e.key==='Escape'){closePres();}
+}
+function presSlide(o){
+  const d=o.data,pr=d.peribadi,rk=d.ringKV,L=o.lc;
+  const v=x=>(x&&String(x).trim())?esc(x):'<span style="color:#a79c86;font-style:italic">—</span>';
+  const photo=o.photo?`<img class="ps-photo" src="${o.photo}">`:`<div class="ps-photo ph">${esc(initials(o.nama))}</div>`;
+  const pangkat=(d.pangkat||[]).map(r=>`${esc(r[1])} (${esc(r[2])})`).join(' · ')||'—';
+  const akademik=(d.akademik||[]).length?d.akademik.map(r=>`${esc(r[1])} — ${esc(r[2])} (${esc(r[3])})`).join('<br>'):'—';
+  const anugerah=(d.anugerah||[]).length?d.anugerah.map(r=>`${esc(r[1])} — ${esc(r[2])}`).join('<br>'):'Tiada';
+  return `<div class="ps">
+    <div class="ps-head">
+      ${photo}
+      <div>
+        <p class="nm">${esc(o.nama)}</p>
+        <div class="meta">
+          <span class="ps-tag">Gred ${esc(o.gred)}</span>
+          <span class="ps-tag brass">Bersara ${esc(o.bersara)}${o.bakiCalc?' · baki '+esc(o.bakiCalc):''}</span>
+        </div>
+        <div class="ps-sub">${esc(pr['No Kad Pengenalan']||'')} · ${esc(pr['Tarikh Lahir / Umur']||'')}${o.role?' · '+esc(o.role):''}</div>
+      </div>
+    </div>
+    <div class="ps-cad">
+      <div class="lab">Cadangan Pergerakan Baharu${L.cadanganOleh?' · '+esc(L.cadanganOleh):''}</div>
+      <div class="big">${v(o.jawatanBaru)}</div>
+      <div class="row2"><span><b>Gred:</b> ${v(o.gredBaru)}</span><span><b>Tempat Bertugas:</b> ${v(o.tempatBaru)}</span></div>
+      ${L.justifikasi?`<div class="ps-sub" style="margin-top:10px"><b>Justifikasi:</b> ${nl2br(L.justifikasi)}</div>`:''}
+    </div>
+    <div class="ps-grid">
+      <div class="ps-card"><div class="h">Jawatan &amp; Tempat Semasa</div><div class="b"><dl class="ps-kv">
+        <dt>Jawatan Semasa</dt><dd>${v(L.jawatanSemasa)}</dd>
+        <dt>Gred Jawatan</dt><dd>${v(L.gredSemasa)}</dd>
+        <dt>Tempat Bertugas</dt><dd>${v(L.tempatSemasa)}</dd>
+      </dl></div></div>
+      <div class="ps-card"><div class="h">Maklumat Kekosongan</div><div class="b"><dl class="ps-kv">
+        <dt>Tarikh Kekosongan</dt><dd>${v(L.tarikhKekosongan)}</dd>
+        <dt>Sebab Kekosongan</dt><dd>${L.sebabKekosongan?nl2br(L.sebabKekosongan):'<span style="color:#a79c86;font-style:italic">—</span>'}</dd>
+        <dt>Penyandang Sedia Ada</dt><dd>${v(L.namaPenyandangSedia)}</dd>
+      </dl></div></div>
+    </div>
+    <div class="ps-grid">
+      <div class="ps-card"><div class="h">Ringkasan Perkhidmatan</div><div class="b"><dl class="ps-kv">
+        <dt>Tarikh Lantikan</dt><dd>${v(rk['Tarikh Lantikan'])}</dd>
+        <dt>Sah Jawatan</dt><dd>${v(rk['Tarikh Sah Jawatan'])}</dd>
+        <dt>Kenaikan Pangkat</dt><dd>${pangkat}</dd>
+        <dt>Tarikh Bersara</dt><dd>${v(o.bersara)}${o.bakiCalc?' ('+esc(o.bakiCalc)+')':''}</dd>
+      </dl></div></div>
+      <div class="ps-card"><div class="h">Akademik &amp; Anugerah</div><div class="b">
+        <div style="margin-bottom:10px">${akademik}</div>
+        <div style="color:var(--ink-soft);font-size:11px;text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Anugerah</div>
+        <div>${anugerah}</div>
+      </div></div>
+    </div>
+  </div>`;
+}
+
 /* ============================================================ WIRING ============================================================ */
 const drop=$('#drop');
 $('#pickBtn').onclick=()=>$('#fileInput').click();
@@ -835,6 +978,7 @@ $('#fileInput').onchange=e=>{handleFiles(e.target.files);e.target.value='';};
 drop.addEventListener('drop',e=>handleFiles(e.dataTransfer.files));
 $('#clearBtn').onclick=()=>{officers.length=0;render();$('#toolbar').style.display='none';};
 $('#printAllBtn').onclick=printAll;
+$('#presBtn').onclick=()=>startPresentation();
 $('#lampCBtn').onclick=generateLampiranC;
 $('#lampCIndBtn').onclick=generateLampiranCIndividual;
 $('#saveMeetBtn').onclick=saveMeeting;
