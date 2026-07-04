@@ -127,6 +127,14 @@ table.master-t td.nm{font-weight:600;color:var(--navy)}
 .subgrp{font-size:11px;letter-spacing:.8px;text-transform:uppercase;color:var(--ink-soft);font-weight:700;margin:14px 0 8px}
 .subgrp:first-child{margin-top:2px}
 
+.pk-row{display:grid;grid-template-columns:1fr 1fr 42px;gap:10px;margin-bottom:8px;align-items:center}
+.pk-row input{width:100%;font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff}
+.pk-row input:focus{outline:2px solid var(--brass-2);outline-offset:1px;border-color:var(--brass)}
+.pk-del{height:42px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:#b32d2d;font-weight:700}
+.pk-del:hover{border-color:#b32d2d;background:#fff5f5}
+.pk-add{background:none;border:none;color:var(--brass);font:inherit;font-weight:600;font-size:13px;cursor:pointer;padding:4px 0}
+.pk-add:hover{text-decoration:underline}
+
 .ocard .actions{display:flex;gap:10px;flex-wrap:wrap;padding:14px 20px;border-top:1px solid var(--line-2);background:#faf8f2}
 .ocard .actions .spacer{margin-left:auto}
 
@@ -501,8 +509,7 @@ async function handleFiles(fileList){
           gredPenyandang:data.meta.gred||'',
           tarikhBersaraUmur:bersara?(bersara+(umur?` (${umur})`:'')):'',
           jawatanSemasa:'',gredSemasa:data.meta.gred||'',tempatSemasa:lastExp||'',
-          tarikhLantikanGred:tSand&&data.meta.gred?`${tSand} (${data.meta.gred})`:'',
-          tarikhNaikPangkatGred:'',
+          pangkatList:(data.pangkat||[]).map(r=>({tarikh:r[2]||'',gred:r[1]||''})),
           tarikhKekosongan:'',sebabKekosongan:'',namaPenyandangSedia:'',
           cadanganOleh:'',justifikasi:'',
         },
@@ -549,8 +556,38 @@ function fldLC(label,val,id,key,ta){
 function fldCore(label,val,id,key){
   return`<div class="field"><label>${label}</label><input type="text" value="${esc(val)}" oninput="setCore(${id},'${key}',this.value)"></div>`;
 }
+function ensureLc(o){
+  o.lc=o.lc||{};
+  if(!Array.isArray(o.lc.pangkatList)){
+    let list=[];
+    if((o.lc.tarikhLantikanGred||'').trim()||(o.lc.tarikhNaikPangkatGred||'').trim()){
+      [o.lc.tarikhLantikanGred,o.lc.tarikhNaikPangkatGred].forEach(s=>{
+        if(s&&s.trim()){const m=s.match(/^\s*(.*?)\s*(?:\(([^)]*)\))?\s*$/);list.push({tarikh:((m&&m[1])||s).trim(),gred:((m&&m[2])||'').trim()});}
+      });
+    }else if(o.data&&Array.isArray(o.data.pangkat)){
+      list=o.data.pangkat.map(r=>({tarikh:r[2]||'',gred:r[1]||''}));
+    }
+    o.lc.pangkatList=list;
+  }
+  return o;
+}
+function pangkatRows(o){
+  const list=o.lc.pangkatList||[];
+  if(!list.length)return'<div style="color:#a79c86;font-style:italic;font-size:13px;margin-bottom:8px">Tiada rekod — tambah baris di bawah.</div>';
+  return list.map((r,i)=>`
+    <div class="pk-row">
+      <input type="text" value="${esc(r.tarikh)}" placeholder="Tarikh (cth: 01/12/2021)" oninput="setPangkat(${o.id},${i},'tarikh',this.value)">
+      <input type="text" value="${esc(r.gred)}" placeholder="Gred (cth: DG44)" oninput="setPangkat(${o.id},${i},'gred',this.value)">
+      <button class="pk-del" onclick="delPangkat(${o.id},${i})" title="Buang baris">✕</button>
+    </div>`).join('');
+}
+function setPangkat(id,i,key,val){const o=officers.find(x=>x.id===id);if(!o||!o.lc.pangkatList[i])return;o.lc.pangkatList[i][key]=val;}
+function addPangkat(id){const o=officers.find(x=>x.id===id);if(!o)return;o.lc.pangkatList=o.lc.pangkatList||[];o.lc.pangkatList.push({tarikh:'',gred:''});$('#pk'+id).innerHTML=pangkatRows(o);}
+function delPangkat(id,i){const o=officers.find(x=>x.id===id);if(!o)return;o.lc.pangkatList.splice(i,1);$('#pk'+id).innerHTML=pangkatRows(o);}
+
 function renderCards(){
   $('#cards').innerHTML=officers.map((o,idx)=>{
+    ensureLc(o);
     const L=o.lc;
     const photo=o.photo?`<img class="photo" src="${o.photo}" alt="Foto ${esc(o.nama)}">`:`<div class="photo ph">${esc(initials(o.nama))}</div>`;
     const badge=o.photoAuto?'Gambar diekstrak dari PDF':(o.photo?'Gambar dimuat naik':'Tiada gambar dikesan');
@@ -602,11 +639,9 @@ function renderCards(){
             ${fldLC('Gred Jawatan',L.gredSemasa,o.id,'gredSemasa')}
             ${fldLC('Tempat Bertugas Semasa',L.tempatSemasa,o.id,'tempatSemasa')}
           </div>
-          <div class="subgrp">Tarikh Lantikan / Naik Pangkat Gred</div>
-          <div class="grid2">
-            ${fldLC('Tarikh Lantikan Gred (+gred)',L.tarikhLantikanGred,o.id,'tarikhLantikanGred')}
-            ${fldLC('Tarikh Naik Pangkat (Gred)',L.tarikhNaikPangkatGred,o.id,'tarikhNaikPangkatGred')}
-          </div>
+          <div class="subgrp">Sejarah Kenaikan Pangkat <span style="text-transform:none;letter-spacing:0;font-weight:400;color:#a79c86">— diambil dari PDF; tambah/buang jika perlu</span></div>
+          <div id="pk${o.id}">${pangkatRows(o)}</div>
+          <button class="pk-add" onclick="addPangkat(${o.id})">＋ Tambah baris kenaikan pangkat</button>
           <div class="subgrp">Maklumat Kekosongan</div>
           <div class="grid3">
             ${fldLC('Tarikh Kekosongan',L.tarikhKekosongan,o.id,'tarikhKekosongan')}
@@ -689,10 +724,12 @@ function watermarkLayer(){
 function lampiranCDoc(list){
   const src=list||officers;
   const rows=src.map((o,i)=>{
+    ensureLc(o);
     const L=o.lc;
     const idn=liList([o.nama,o.data.peribadi['No Kad Pengenalan']||'',L.gredPenyandang,L.tarikhBersaraUmur]);
     const sedia=liList([L.jawatanSemasa,L.gredSemasa,L.tempatSemasa]);
-    const tarikh=liList([L.tarikhLantikanGred,L.tarikhNaikPangkatGred]);
+    const pkList=(L.pangkatList||[]).map(p=>`${(p.tarikh||'').trim()}${(p.gred||'').trim()?' ('+(p.gred||'').trim()+')':''}`.trim()).filter(s=>s);
+    const tarikh=pkList.length?liList(pkList):'&nbsp;';
     const baru=liList([o.jawatanBaru,o.gredBaru,o.tempatBaru]);
     const kosong=liList([L.tarikhKekosongan,L.sebabKekosongan,L.namaPenyandangSedia]);
     const just=`${L.cadanganOleh?`<b>${esc(L.cadanganOleh)}</b>`:''}${L.justifikasi?nl2br(L.justifikasi):''}`||'&nbsp;';
@@ -916,10 +953,12 @@ function presKey(e){
   else if(e.key==='Escape'){closePres();}
 }
 function presSlide(o){
+  ensureLc(o);
   const d=o.data,pr=d.peribadi,rk=d.ringKV,L=o.lc;
   const v=x=>(x&&String(x).trim())?esc(x):'<span style="color:#a79c86;font-style:italic">—</span>';
   const photo=o.photo?`<img class="ps-photo" src="${o.photo}">`:`<div class="ps-photo ph">${esc(initials(o.nama))}</div>`;
-  const pangkat=(d.pangkat||[]).map(r=>`${esc(r[1])} (${esc(r[2])})`).join(' · ')||'—';
+  const pkArr=(L.pangkatList||[]).map(p=>`${(p.tarikh||'').trim()}${(p.gred||'').trim()?' ('+(p.gred||'').trim()+')':''}`.trim()).filter(s=>s);
+  const pangkat=pkArr.length?pkArr.map(esc).join(' · '):'—';
   const akademik=(d.akademik||[]).length?d.akademik.map(r=>`${esc(r[1])} — ${esc(r[2])} (${esc(r[3])})`).join('<br>'):'—';
   const anugerah=(d.anugerah||[]).length?d.anugerah.map(r=>`${esc(r[1])} — ${esc(r[2])}`).join('<br>'):'Tiada';
   return `<div class="ps">
