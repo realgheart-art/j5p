@@ -306,7 +306,7 @@ body.role-pemerhati .admin-only{display:none!important}
 </header>
 
 <main class="wrap">
-  <section class="intro">
+  <section class="intro admin-only">
     <div class="eyebrow">Penjanaan · Cadangan · Lampiran C</div>
     <h2>Muat naik Laporan CV Pegawai (PDF)</h2>
     <p>Sistem membaca setiap fail terus dalam pelayar — data tidak dihantar ke mana-mana pelayan. Gred, Tarikh Bersara dan gambar diekstrak automatik. Lengkapkan cadangan pergerakan untuk jana Resume dan dokumen <b>Lampiran C</b> untuk Sumber Manusia.</p>
@@ -566,7 +566,9 @@ async function handleFiles(fileList){
 function setStatus(s){$('#statusMsg').textContent=s;}
 
 /* ============================================================ RENDER ============================================================ */
-function render(){$('#cnt').textContent=officers.length;renderMaster();renderCards();$('#empty').style.display=officers.length?'none':'block';applyRole();}
+function render(){$('#cnt').textContent=officers.length;renderMaster();renderCards();
+  $('#empty').innerHTML=officers.length?'':(currentRole==='pemerhati'?'Klik <b>📂 Buka Rekod</b> di atas untuk memilih mesyuarat dan melihat rekod.':'Belum ada rekod. Muat naik fail PDF untuk bermula.');
+  $('#empty').style.display=officers.length?'none':'block';applyRole();}
 function mesyLabel(){const b=$('#mBil').value.trim(),t=$('#mTahun').value.trim();if(!b&&!t)return'';return`Mesyuarat J5P Bil. ${b||'—'}${t?' Tahun '+t:''}`;}
 
 function renderMaster(){
@@ -916,15 +918,17 @@ async function saveMeeting(){
   }catch(e){toast('Ralat: '+e.message);}
   setStatus('');
 }
-async function openRecords(){
-  if(!backendUrl()){toast('Tetapkan URL backend dahulu.');const s=$('#settings');if(!s.innerHTML)renderSettings();s.classList.add('open');return;}
+async function openRecords(auto){
+  if(!backendUrl()){if(auto)return;toast('Tetapkan URL backend dahulu.');const s=$('#settings');if(!s.innerHTML)renderSettings();s.classList.add('open');return;}
   setStatus('Memuatkan senarai mesyuarat…');
   try{
     const r=await apiCall({action:'meetings'});
     setStatus('');
-    if(!r||!r.ok){toast('Gagal memuatkan senarai.');return;}
-    showRecords(r.meetings||[]);
-  }catch(e){setStatus('');toast('Ralat: '+e.message);}
+    if(!r||!r.ok){if(!auto)toast('Gagal memuatkan senarai.');return;}
+    const meetings=r.meetings||[];
+    if(auto&&!meetings.length)return;
+    showRecords(meetings);
+  }catch(e){setStatus('');if(!auto)toast('Ralat: '+e.message);}
 }
 function showRecords(meetings){
   if(!meetings.length){$('#recList').innerHTML='<div style="color:#a79c86;padding:14px;text-align:center">Belum ada rekod tersimpan.</div>';}
@@ -1072,7 +1076,10 @@ function enterApp(){
   currentRole=(auth&&auth.role)||'pemerhati';
   $('#auth').classList.remove('open');
   $('#userBadge').innerHTML=`${esc(auth.nama)} <span class="role-chip">${currentRole==='admin'?'ADMIN':'PEMERHATI'}</span>`;
+  $('#toolbar').style.display='flex';
   applyRole();
+  render();
+  openRecords(true);
 }
 function logout(){try{sessionStorage.removeItem('j5p_auth');}catch(e){}auth=null;currentRole=null;location.reload();}
 function toggleFullscreen(){
@@ -1104,7 +1111,7 @@ $('#fsBtn').onclick=toggleFullscreen;
 $('#lampCBtn').onclick=generateLampiranC;
 $('#lampCIndBtn').onclick=generateLampiranCIndividual;
 $('#saveMeetBtn').onclick=saveMeeting;
-$('#openRecBtn').onclick=openRecords;
+$('#openRecBtn').onclick=()=>openRecords();
 $('#recModal').addEventListener('click',e=>{if(e.target.id==='recModal')closeRec();});
 $('#cfgBtn').onclick=()=>{const s=$('#settings');if(!s.innerHTML)renderSettings();s.classList.toggle('open');applyRole();};
 $('#lcModal').addEventListener('click',e=>{if(e.target.id==='lcModal')closeLC();});
