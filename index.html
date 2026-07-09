@@ -93,6 +93,10 @@ table.master-t td.nm{font-weight:600;color:var(--navy)}
 .pill{display:inline-block;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:600;background:var(--brass-soft);color:#6b4e17}
 .pill.navy{background:#e6edf7;color:var(--navy)}
 .muted{color:#a79c86;font-style:italic}
+.jlegend{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px;border-bottom:1px solid var(--line-2);background:#fcfaf5}
+.jchip{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:#3a4657;border:1px solid;border-radius:999px;padding:4px 11px}
+.jchip b{color:var(--navy);font-weight:700}
+.jdot{width:11px;height:11px;border-radius:50%;display:inline-block;flex:0 0 auto}
 
 .cards{display:flex;flex-direction:column;gap:18px}
 .ocard{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
@@ -270,6 +274,38 @@ body.role-pemerhati .admin-only{display:none!important}
 @media (max-width:820px){.ps-grid{grid-template-columns:1fr}.pres-stage{padding:0 16px 24px}.pres-arrow{width:42px;height:42px;font-size:22px}}
 @media print{body.printing .pres{display:none!important}}
 
+/* ---------- Group-by-post view ---------- */
+.gv{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;background:var(--paper)}
+.gv.open{display:flex}
+.gv-bar{background:linear-gradient(180deg,var(--navy),var(--navy-2));color:#fff;display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:3px solid var(--brass)}
+.gv-bar b{font-size:16px;font-family:"Fraunces"}
+.gv-bar .spacer{margin-left:auto}
+.gv-bar .sub{font-size:13px;color:#c7d3e4}
+.gv-stage{flex:1;overflow:auto;padding:22px}
+.gv-hint{max-width:1120px;margin:0 auto 16px;color:var(--ink-soft);font-size:13px}
+.grp{max-width:1120px;margin:0 auto 24px}
+.grp-h{display:flex;align-items:center;gap:10px;border-left:6px solid;padding:9px 14px;background:#fff;border-radius:10px;box-shadow:var(--shadow);margin-bottom:14px}
+.grp-title{font-family:"Fraunces";font-weight:600;color:var(--navy);font-size:18px}
+.grp-count{margin-left:auto;font-size:13px;color:var(--ink-soft);font-weight:600}
+.grp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.obox{text-align:left;background:#fff;border:1px solid var(--line);border-top:4px solid;border-radius:12px;padding:14px;cursor:pointer;box-shadow:var(--shadow);transition:.15s;font:inherit;display:flex;flex-direction:column;gap:7px;align-items:flex-start}
+.obox:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(18,36,59,.18);border-color:var(--brass)}
+.ob-photo{width:58px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+.ob-photo.ph{display:grid;place-items:center;font-family:"Fraunces";font-size:22px;color:#fff;background:linear-gradient(140deg,var(--navy),var(--navy-soft));border:none}
+.ob-name{font-weight:700;color:var(--navy);font-size:14.5px;line-height:1.2}
+.ob-sub{font-size:12px;color:var(--ink-soft)}
+.ob-arrow{font-size:12.5px;color:#3a4657;margin-top:2px}
+.ob-open{margin-top:auto;font-size:11.5px;color:var(--brass);font-weight:600}
+.obox.selected{border:2px solid #2f6b4f;box-shadow:0 0 0 3px rgba(47,107,79,.15),var(--shadow)}
+.ob-select{margin-top:6px;font:inherit;font-size:12px;font-weight:600;border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer;color:var(--navy);width:100%;text-align:center}
+.ob-select:hover{border-color:#2f6b4f;color:#2f6b4f}
+.ob-select.on{background:#2f6b4f;color:#fff;border-color:#2f6b4f}
+.sel-pill{display:inline-block;background:#e6f2ec;color:#2f6b4f;border:1px solid #b7d9c6;font-weight:700;font-size:10.5px;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle}
+.ocard.selected{box-shadow:0 0 0 2px #2f6b4f,var(--shadow)}
+#resumeModal{z-index:110}
+#resumeModal .modal-in{max-width:900px}
+@media print{body.printing .gv,body.printing #resumeModal{display:none!important}}
+
 #printArea{display:none}
 @media print{
   body.printing{background:#fff}
@@ -329,7 +365,9 @@ body.role-pemerhati .admin-only{display:none!important}
     <button class="btn ghost sm admin-only" id="cfgBtn" type="button">⚙︎ Tetapan Lampiran C</button>
     <button class="btn brass sm admin-only" id="lampCBtn" type="button">📋 Lampiran C (Gabungan)</button>
     <button class="btn brass sm admin-only" id="lampCIndBtn" type="button">📋 Lampiran C (Individu)</button>
+    <button class="btn brass sm admin-only" id="lampCSelBtn" type="button">📋 Lampiran C (Dipilih)</button>
     <button class="btn brass sm" id="presBtn" type="button">🎤 Pembentangan</button>
+    <button class="btn brass sm" id="grpBtn" type="button">🗂️ Kumpulan Post</button>
     <button class="btn ghost sm" id="fsBtn" type="button">⛶ Skrin Penuh</button>
     <button class="btn ghost sm admin-only" id="printAllBtn" type="button">🖨️ Semua Resume</button>
     <button class="btn ghost sm admin-only" id="clearBtn" type="button">Kosongkan</button>
@@ -378,6 +416,36 @@ body.role-pemerhati .admin-only{display:none!important}
   <button class="pres-arrow left" onclick="presNav(-1)" title="Sebelum (←)">‹</button>
   <div class="pres-stage" id="presStage"></div>
   <button class="pres-arrow right" onclick="presNav(1)" title="Seterus (→)">›</button>
+</div>
+
+<div class="gv" id="groupView">
+  <div class="gv-bar">
+    <b>Kumpulan Jawatan Baharu</b>
+    <span class="sub" id="grpMeta"></span>
+    <span class="spacer"></span>
+    <span class="sub" id="grpSelCount"></span>
+    <button class="btn brass sm admin-only" onclick="generateLampiranCSelected()">📋 Lampiran C (Dipilih)</button>
+    <span class="sub" id="grpCount"></span>
+    <button class="pres-x" onclick="toggleFullscreen()" title="Skrin Penuh">⛶</button>
+    <button class="pres-x" onclick="closeGroupView()" title="Tutup (Esc)">✕</button>
+  </div>
+  <div class="gv-stage">
+    <div class="gv-hint">Pegawai dikumpulkan mengikut Jawatan Baharu yang dicadangkan. Klik mana-mana kotak pegawai untuk melihat resume penuh.</div>
+    <div id="groupStage"></div>
+  </div>
+</div>
+
+<div class="modal" id="resumeModal">
+  <div class="modal-in">
+    <div class="modal-bar">
+      <b id="resumeTitle">Resume</b>
+      <span class="spacer"></span>
+      <button class="btn ghost sm admin-only" id="resSelBtn" onclick="toggleSelectedPopup()">☆ Pilih</button>
+      <button class="btn brass sm admin-only" onclick="printResumePopup()">🖨️ Simpan PDF</button>
+      <button class="btn ghost sm" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="closeResume()">Tutup</button>
+    </div>
+    <div class="modal-body" id="resumeBody"></div>
+  </div>
 </div>
 
 <div class="auth" id="auth">
@@ -545,7 +613,7 @@ async function handleFiles(fileList){
         photo:read.photo&&!read.photo.likelyEmpty?read.photo.dataUrl:null,
         photoAuto:read.photo&&!read.photo.likelyEmpty,
         /* cadangan teras */
-        jawatanBaru:'',gredBaru:'',tempatBaru:'',
+        jawatanBaru:'',gredBaru:'',tempatBaru:'',selected:false,
         /* butiran lanjut Lampiran C (default berpandukan CV) */
         lc:{
           gredPenyandang:data.meta.gred||'',
@@ -566,26 +634,54 @@ async function handleFiles(fileList){
 function setStatus(s){$('#statusMsg').textContent=s;}
 
 /* ============================================================ RENDER ============================================================ */
-function render(){$('#cnt').textContent=officers.length;renderMaster();renderCards();
+/* ---- Warna mengikut Jawatan Baharu (post sama = warna sama) ---- */
+const J_PALETTE=[['#2f6b4f','#e6f2ec'],['#1c5a8f','#e4eef7'],['#b3542e','#f7e9e2'],['#8a4b9e','#f1e8f5'],['#b0894f','#f6eede'],['#2a8a86','#e2f2f1'],['#a03a5a','#f6e6ec'],['#4a4f8a','#e8e9f5'],['#9a6b1f','#f6efdf'],['#4a5f2a','#eef1e2'],['#3a6ea5','#e6eef6'],['#7a5230','#f0e7de']];
+let jColors={}, jGroups=[];
+function jawatanKey(s){return (s||'').trim().replace(/\s+/g,' ').toUpperCase();}
+function computeJColors(){
+  jColors={};jGroups=[];let i=0;
+  for(const o of officers){
+    const k=jawatanKey(o.jawatanBaru);if(!k)continue;
+    if(!(k in jColors)){jColors[k]=J_PALETTE[i%J_PALETTE.length];i++;jGroups.push({key:k,label:o.jawatanBaru.trim(),color:jColors[k],count:1});}
+    else{const g=jGroups.find(x=>x.key===k);if(g)g.count++;}
+  }
+}
+function jColorOf(s){const k=jawatanKey(s);return k?(jColors[k]||null):null;}
+function updateJColorsUI(){
+  computeJColors();renderMaster();
+  officers.forEach(o=>{
+    const c=jColorOf(o.jawatanBaru);
+    const card=document.getElementById('card'+o.id);if(card)card.style.borderLeft='6px solid '+(c?c[0]:'transparent');
+    const dot=document.getElementById('jdot'+o.id);if(dot)dot.style.background=c?c[0]:'transparent';
+  });
+}
+
+function render(){$('#cnt').textContent=officers.length;computeJColors();renderMaster();renderCards();
   $('#empty').innerHTML=officers.length?'':(currentRole==='pemerhati'?'Klik <b>📂 Buka Rekod</b> di atas untuk memilih mesyuarat dan melihat rekod.':'Belum ada rekod. Muat naik fail PDF untuk bermula.');
   $('#empty').style.display=officers.length?'none':'block';applyRole();}
 function mesyLabel(){const b=$('#mBil').value.trim(),t=$('#mTahun').value.trim();if(!b&&!t)return'';return`Mesyuarat J5P Bil. ${b||'—'}${t?' Tahun '+t:''}`;}
 
 function renderMaster(){
   if(!officers.length){$('#masterHolder').innerHTML='';return;}
-  const rows=officers.map((o,i)=>`
+  const rows=officers.map((o,i)=>{
+    const c=jColorOf(o.jawatanBaru);
+    const jb=o.jawatanBaru?`${c?`<span class="jdot" style="background:${c[0]};margin-right:7px;vertical-align:middle"></span>`:''}${esc(o.jawatanBaru)}${o.gredBaru?` <span class="pill navy">${esc(o.gredBaru)}</span>`:''}`:'<span class="muted">belum diisi</span>';
+    return `
     <tr>
       <td class="c">${i+1}</td>
-      <td class="nm">${esc(o.nama)}<div style="font-weight:400;color:#a79c86;font-size:11.5px">${esc(o.data.peribadi['No Kad Pengenalan']||'')}</div></td>
+      <td class="nm">${esc(o.nama)}${o.selected?' <span class="sel-pill">✓ DIPILIH</span>':''}<div style="font-weight:400;color:#a79c86;font-size:11.5px">${esc(o.data.peribadi['No Kad Pengenalan']||'')}</div></td>
       <td class="c"><span class="pill navy">${esc(o.gred)}</span></td>
       <td class="c">${esc(o.bersara)}</td>
       <td class="c">${o.bakiCalc?`<span class="pill">${esc(o.bakiCalc)}</span>`:'—'}</td>
-      <td>${o.jawatanBaru?esc(o.jawatanBaru):'<span class="muted">belum diisi</span>'}${o.gredBaru?` <span class="pill navy">${esc(o.gredBaru)}</span>`:''}</td>
+      <td style="${c?'background:'+c[1]:''}">${jb}</td>
       <td>${o.tempatBaru?esc(o.tempatBaru):'<span class="muted">belum diisi</span>'}</td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
+  const legend=jGroups.length?`<div class="jlegend">${jGroups.map(g=>`<span class="jchip" style="background:${g.color[1]};border-color:${g.color[0]}"><span class="jdot" style="background:${g.color[0]}"></span>${esc(g.label)} <b>×${g.count}</b></span>`).join('')}</div>`:'';
   $('#masterHolder').innerHTML=`
     <div class="master">
       <div class="head"><h3>Senarai Induk Pegawai</h3><span class="tag">${esc(mesyLabel()||'Belum ditetapkan bilangan mesyuarat')}</span></div>
+      ${legend}
       <div class="tbl-scroll"><table class="master-t">
         <thead><tr><th class="c">#</th><th>Nama Pegawai</th><th class="c">Gred</th><th class="c">Tarikh Bersara</th><th class="c">Baki</th><th>Jawatan Baharu</th><th>Tempat Baharu</th></tr></thead>
         <tbody>${rows}</tbody></table></div>
@@ -633,6 +729,7 @@ function renderCards(){
   $('#cards').innerHTML=officers.map((o,idx)=>{
     ensureLc(o);
     const L=o.lc;
+    const col=jColorOf(o.jawatanBaru);
     const photo=o.photo?`<img class="photo" src="${o.photo}" alt="Foto ${esc(o.nama)}">`:`<div class="photo ph">${esc(initials(o.nama))}</div>`;
     const badge=o.photoAuto?'Gambar diekstrak dari PDF':(o.photo?'Gambar dimuat naik':'Tiada gambar dikesan');
     const sel=`<div class="field"><label>Cadangan Oleh</label><select onchange="setLC(${o.id},'cadanganOleh',this.value)">
@@ -641,7 +738,7 @@ function renderCards(){
         <option${L.cadanganOleh==='CADANGAN PPD'?' selected':''}>CADANGAN PPD</option>
       </select></div>`;
     return`
-    <div class="ocard" id="card${o.id}">
+    <div class="ocard ${o.selected?'selected':''}" id="card${o.id}" style="border-left:6px solid ${col?col[0]:'transparent'}">
       <div class="top">
         <div class="photo-wrap">
           ${photo}
@@ -650,7 +747,7 @@ function renderCards(){
           <input type="file" accept="image/*" hidden id="ph${o.id}" onchange="onPhoto(${o.id},this)">
         </div>
         <div class="ident">
-          <p class="nm">${esc(o.nama)}</p>
+          <p class="nm">${esc(o.nama)}${o.selected?' <span class="sel-pill">✓ DIPILIH</span>':''}</p>
           <p class="role">${esc(o.role||'—')}</p>
           <div class="chips">
             <div class="chip"><div class="k">Gred Semasa</div><div class="v">${esc(o.gred)}</div></div>
@@ -661,7 +758,7 @@ function renderCards(){
       </div>
 
       <div class="cadangan">
-        <div class="bar"><span class="lb">Jawatan Baru Yang Dicadangkan</span><span class="ln"></span></div>
+        <div class="bar"><span class="lb">Jawatan Baru Yang Dicadangkan</span><span class="jdot" id="jdot${o.id}" style="margin-left:8px;background:${col?col[0]:'transparent'}"></span><span class="ln"></span></div>
         <div class="grid3">
           ${fldCore('Jawatan Baharu',o.jawatanBaru,o.id,'jawatanBaru')}
           ${fldCore('Gred Jawatan',o.gredBaru,o.id,'gredBaru')}
@@ -707,6 +804,7 @@ function renderCards(){
         </span>
         <span class="posbadge">Kedudukan&nbsp;#${idx+1}</span>
         <button class="btn ghost sm" onclick="toggleResume(${o.id})" id="tgl${o.id}">Resume</button>
+        <button class="btn ${o.selected?'brass':'ghost'} sm admin-only" onclick="toggleSelected(${o.id})">${o.selected?'★ Dipilih':'☆ Pilih'}</button>
         <button class="btn ghost sm admin-only" onclick="removeOfficer(${o.id})">Buang</button>
         <div class="spacer"></div>
         <button class="btn ghost sm" onclick="startPresentation(${o.id})">🎤 Pembentangan</button>
@@ -870,7 +968,7 @@ function setCfg(k,v){docCfg[k]=v;}
 function onWatermark(input){const f=input.files[0];if(!f)return;const rd=new FileReader();rd.onload=e=>{docCfg.watermarkImg=e.target.result;const s=$('#wmStatus');if(s)s.textContent='✓ Imej dimuat naik — digunakan sebagai watermark & logo penjuru';toast('Imej watermark dikemas kini.');};rd.readAsDataURL(f);}
 
 /* ============================================================ INTERACTIONS ============================================================ */
-function setCore(id,key,val){const o=officers.find(x=>x.id===id);if(!o)return;o[key]=val;renderMaster();}
+function setCore(id,key,val){const o=officers.find(x=>x.id===id);if(!o)return;o[key]=val;if(key==='jawatanBaru')updateJColorsUI();else renderMaster();}
 function setLC(id,key,val){const o=officers.find(x=>x.id===id);if(!o)return;o.lc[key]=val;}
 function toggleMore(id){const b=$('#mb'+id),t=$('#mt'+id);const open=b.classList.toggle('open');t.textContent=(open?'▾':'▸')+' '+(open?'Sembunyikan butiran Lampiran C':'Lengkapkan butiran Lampiran C');}
 function toggleResume(id){const el=$('#res'+id),btn=$('#tgl'+id);const open=el.classList.toggle('open');btn.textContent=open?'Sembunyikan Resume':'Lihat Resume Penuh';}
@@ -1008,6 +1106,7 @@ function presSlide(o){
   const photo=o.photo?`<img class="ps-photo" src="${o.photo}">`:`<div class="ps-photo ph">${esc(initials(o.nama))}</div>`;
   const pkArr=(L.pangkatList||[]).map(p=>`${(p.tarikh||'').trim()}${(p.gred||'').trim()?' ('+(p.gred||'').trim()+')':''}`.trim()).filter(s=>s);
   const pangkat=pkArr.length?pkArr.map(esc).join(' · '):'—';
+  const col=jColorOf(o.jawatanBaru);
   const akademik=(d.akademik||[]).length?d.akademik.map(r=>`${esc(r[1])} — ${esc(r[2])} (${esc(r[3])})`).join('<br>'):'—';
   const anugerah=(d.anugerah||[]).length?d.anugerah.map(r=>`${esc(r[1])} — ${esc(r[2])}`).join('<br>'):'Tiada';
   return `<div class="ps">
@@ -1022,7 +1121,7 @@ function presSlide(o){
         <div class="ps-sub">${esc(pr['No Kad Pengenalan']||'')} · ${esc(pr['Tarikh Lahir / Umur']||'')}${o.role?' · '+esc(o.role):''}</div>
       </div>
     </div>
-    <div class="ps-cad">
+    <div class="ps-cad"${col?` style="border-left:6px solid ${col[0]}"`:''}>
       <div class="lab">Cadangan Pergerakan Baharu${L.cadanganOleh?' · '+esc(L.cadanganOleh):''}</div>
       <div class="big">${v(o.jawatanBaru)}</div>
       <div class="row2"><span><b>Gred:</b> ${v(o.gredBaru)}</span><span><b>Tempat Bertugas:</b> ${v(o.tempatBaru)}</span></div>
@@ -1096,6 +1195,78 @@ function applyRole(){
   document.querySelectorAll('#cards input,#cards select,#cards textarea,#settings input,#settings textarea,.mesy input').forEach(el=>{el.disabled=obs;});
 }
 
+/* ============================================================ KUMPULAN POST + POP-UP RESUME ============================================================ */
+function groupByJawatan(){
+  computeJColors();
+  const groups=[];const idx={};
+  officers.forEach(o=>{
+    const k=jawatanKey(o.jawatanBaru);const key=k||'__none__';
+    if(!(key in idx)){idx[key]=groups.length;groups.push({key,label:(o.jawatanBaru||'').trim()||'Tiada Jawatan Baharu ditetapkan',color:jColorOf(o.jawatanBaru),members:[]});}
+    groups[idx[key]].members.push(o);
+  });
+  return groups;
+}
+function officerBox(o,c){
+  const photo=o.photo?`<img class="ob-photo" src="${o.photo}">`:`<div class="ob-photo ph">${esc(initials(o.nama))}</div>`;
+  const semasa=(o.lc&&o.lc.tempatSemasa)?o.lc.tempatSemasa:(o.role||'');
+  return `<div class="obox ${o.selected?'selected':''}" style="border-top-color:${c[0]}" onclick="openResumePopup(${o.id})">
+    ${photo}
+    <div class="ob-name">${esc(o.nama)}${o.selected?' <span class="sel-pill">✓ DIPILIH</span>':''}</div>
+    <div class="ob-sub"><span class="pill navy">${esc(o.gred)}</span> · Bersara ${esc(o.bersara)}</div>
+    <div class="ob-sub">Semasa: ${esc(semasa)||'—'}</div>
+    <div class="ob-arrow">→ ${o.tempatBaru?esc(o.tempatBaru):'<span style="opacity:.6">tempat baharu belum diisi</span>'}</div>
+    <button class="ob-select admin-only ${o.selected?'on':''}" onclick="event.stopPropagation();toggleSelected(${o.id})">${o.selected?'✓ Dipilih':'Tandakan Dipilih'}</button>
+    <div class="ob-open">Klik untuk resume ▸</div>
+  </div>`;
+}
+function renderGroupView(){
+  const groups=groupByJawatan();
+  $('#groupStage').innerHTML=groups.map(g=>{
+    const c=g.color||['#8a94a6','#eef0f3'];
+    return `<div class="grp">
+      <div class="grp-h" style="border-left-color:${c[0]}"><span class="jdot" style="background:${c[0]}"></span><span class="grp-title">${esc(g.label)}</span><span class="grp-count">${g.members.length} pegawai</span></div>
+      <div class="grp-grid">${g.members.map(o=>officerBox(o,c)).join('')}</div>
+    </div>`;
+  }).join('');
+  $('#grpMeta').textContent=mesyLabel()||'';
+  const nsel=officers.filter(o=>o.selected).length;
+  $('#grpSelCount').textContent=nsel?`${nsel} dipilih`:'';
+  $('#grpCount').textContent=`${groups.length} kumpulan post`;
+}
+function startGroupView(){if(!officers.length){toast('Tiada pegawai.');return;}renderGroupView();$('#groupView').classList.add('open');}
+function closeGroupView(){$('#groupView').classList.remove('open');}
+
+let popupOfficerId=null;
+function openResumePopup(id){
+  const o=officers.find(x=>x.id===id);if(!o)return;
+  popupOfficerId=id;
+  $('#resumeTitle').textContent=o.nama;
+  $('#resumeBody').innerHTML=`<div class="doc">${resumeDoc(o)}</div>`;
+  $('#resumeModal').classList.add('open');
+  updateResumePopupSelBtn();
+}
+function closeResume(){$('#resumeModal').classList.remove('open');}
+function printResumePopup(){if(popupOfficerId!=null)printOfficer(popupOfficerId);}
+function toggleSelected(id){
+  const o=officers.find(x=>x.id===id);if(!o)return;
+  o.selected=!o.selected;
+  render();
+  if($('#groupView').classList.contains('open'))renderGroupView();
+  updateResumePopupSelBtn();
+}
+function toggleSelectedPopup(){if(popupOfficerId!=null)toggleSelected(popupOfficerId);}
+function updateResumePopupSelBtn(){
+  const b=$('#resSelBtn');if(!b||popupOfficerId==null)return;
+  const o=officers.find(x=>x.id===popupOfficerId);if(!o)return;
+  b.textContent=o.selected?'★ Dipilih':'☆ Pilih';
+  b.classList.toggle('brass',!!o.selected);b.classList.toggle('ghost',!o.selected);
+}
+function generateLampiranCSelected(){
+  const sel=officers.filter(o=>o.selected);
+  if(!sel.length){toast('Tiada pegawai ditandakan "Dipilih".');return;}
+  openLC(`<div class="print-page">${lampiranCDoc(sel)}</div>`,`Lampiran C — Pegawai Dipilih (${sel.length})`);
+}
+
 /* ============================================================ WIRING ============================================================ */
 const drop=$('#drop');
 $('#pickBtn').onclick=()=>$('#fileInput').click();
@@ -1107,6 +1278,10 @@ drop.addEventListener('drop',e=>handleFiles(e.dataTransfer.files));
 $('#clearBtn').onclick=()=>{officers.length=0;render();$('#toolbar').style.display='none';};
 $('#printAllBtn').onclick=printAll;
 $('#presBtn').onclick=()=>startPresentation();
+$('#grpBtn').onclick=startGroupView;
+$('#lampCSelBtn').onclick=generateLampiranCSelected;
+$('#resumeModal').addEventListener('click',e=>{if(e.target.id==='resumeModal')closeResume();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#resumeModal').classList.contains('open'))closeResume();else if($('#groupView').classList.contains('open'))closeGroupView();}});
 $('#fsBtn').onclick=toggleFullscreen;
 $('#lampCBtn').onclick=generateLampiranC;
 $('#lampCIndBtn').onclick=generateLampiranCIndividual;
