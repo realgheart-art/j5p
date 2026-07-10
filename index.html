@@ -1214,6 +1214,7 @@ function groupByJawatan(){
 }
 function officerBox(o,c){
   const photo=o.photo?`<img class="ob-photo" src="${o.photo}">`:`<div class="ob-photo ph">${esc(initials(o.nama))}</div>`;
+  const gredPeny=(o.lc&&o.lc.gredPenyandang&&o.lc.gredPenyandang.trim())?o.lc.gredPenyandang.trim():o.gred;
   const jSemasa=(o.lc&&o.lc.jawatanSemasa&&o.lc.jawatanSemasa.trim())?o.lc.jawatanSemasa:(o.role||'');
   const tSemasa=(o.lc&&o.lc.tempatSemasa&&o.lc.tempatSemasa.trim())?o.lc.tempatSemasa:'';
   const jBaru=o.jawatanBaru?`${esc(o.jawatanBaru)}${o.gredBaru?' ('+esc(o.gredBaru)+')':''}`:'<i>belum diisi</i>';
@@ -1221,7 +1222,7 @@ function officerBox(o,c){
   return `<div class="obox ${o.selected?'selected':''}" style="border-top-color:${c[0]}" onclick="openResumePopup(${o.id})">
     ${photo}
     <div class="ob-name">${esc(o.nama)}${o.selected?' <span class="sel-pill">✓ DIPILIH</span>':''}</div>
-    <div class="ob-sub"><span class="pill navy">${esc(o.gred)}</span> · Bersara ${esc(o.bersara)}</div>
+    <div class="ob-sub"><span class="pill navy">${esc(gredPeny)}</span> · Bersara ${esc(o.bersara)}</div>
     <div class="ob-mv">
       <div class="ob-mv-lbl">Jawatan</div>
       <div class="ob-mv-line">${esc(jSemasa)||'—'} <span class="ob-mv-arw">⏩</span> <b>${jBaru}</b></div>
