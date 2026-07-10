@@ -653,6 +653,7 @@ function computeJColors(){
   }
 }
 function jColorOf(s){const k=jawatanKey(s);return k?(jColors[k]||null):null;}
+function gredPapar(o){return (o.lc&&o.lc.gredPenyandang&&String(o.lc.gredPenyandang).trim())?String(o.lc.gredPenyandang).trim():o.gred;}
 function updateJColorsUI(){
   computeJColors();renderMaster();
   officers.forEach(o=>{
@@ -676,7 +677,7 @@ function renderMaster(){
     <tr>
       <td class="c">${i+1}</td>
       <td class="nm">${esc(o.nama)}${o.selected?' <span class="sel-pill">✓ DIPILIH</span>':''}<div style="font-weight:400;color:#a79c86;font-size:11.5px">${esc(o.data.peribadi['No Kad Pengenalan']||'')}</div></td>
-      <td class="c"><span class="pill navy">${esc(o.gred)}</span></td>
+      <td class="c"><span class="pill navy">${esc(gredPapar(o))}</span></td>
       <td class="c">${esc(o.bersara)}</td>
       <td class="c">${o.bakiCalc?`<span class="pill">${esc(o.bakiCalc)}</span>`:'—'}</td>
       <td style="${c?'background:'+c[1]:''}">${jb}</td>
@@ -756,7 +757,7 @@ function renderCards(){
           <p class="nm">${esc(o.nama)}${o.selected?' <span class="sel-pill">✓ DIPILIH</span>':''}</p>
           <p class="role">${esc(o.role||'—')}</p>
           <div class="chips">
-            <div class="chip"><div class="k">Gred Semasa</div><div class="v">${esc(o.gred)}</div></div>
+            <div class="chip"><div class="k">Gred Semasa</div><div class="v" id="gredchip${o.id}">${esc(gredPapar(o))}</div></div>
             <div class="chip accent"><div class="k">Tarikh Bersara</div><div class="v">${esc(o.bersara)}</div>${o.bakiCalc?`<div class="sub">Baki ≈ ${esc(o.bakiCalc)}</div>`:''}</div>
             <div class="chip"><div class="k">No. Kad Pengenalan</div><div class="v" style="font-size:14px">${esc(o.data.peribadi['No Kad Pengenalan']||'—')}</div></div>
           </div>
@@ -831,7 +832,7 @@ function resumeDoc(o){
   const d=o.data,pr=d.peribadi,ps=d.pasangan,rk=d.ringKV;
   const photo=o.photo?`<img class="dphoto" src="${o.photo}" alt="">`:'';const mes=mesyLabel();
   const cadangan=`<div class="cad-box"><dl class="cg">
-    <dt>Gred Semasa</dt><dd>${esc(o.gred)}</dd>
+    <dt>Gred Semasa</dt><dd>${esc(gredPapar(o))}</dd>
     <dt>Jawatan Baharu</dt><dd>${o.jawatanBaru?esc(o.jawatanBaru):'<span class="muted">— belum diisi —</span>'}${o.gredBaru?' ('+esc(o.gredBaru)+')':''}</dd>
     <dt>Tempat Bertugas Baharu</dt><dd>${o.tempatBaru?esc(o.tempatBaru):'<span class="muted">— belum diisi —</span>'}</dd>
     <dt>Tarikh Bersara Wajib</dt><dd>${esc(o.bersara)}</dd></dl></div>`;
@@ -975,7 +976,15 @@ function onWatermark(input){const f=input.files[0];if(!f)return;const rd=new Fil
 
 /* ============================================================ INTERACTIONS ============================================================ */
 function setCore(id,key,val){const o=officers.find(x=>x.id===id);if(!o)return;o[key]=val;if(key==='jawatanBaru')updateJColorsUI();else renderMaster();}
-function setLC(id,key,val){const o=officers.find(x=>x.id===id);if(!o)return;o.lc[key]=val;}
+function setLC(id,key,val){
+  const o=officers.find(x=>x.id===id);if(!o)return;
+  o.lc[key]=val;
+  if(key==='gredPenyandang'){
+    renderMaster();
+    const chip=document.getElementById('gredchip'+id);if(chip)chip.textContent=gredPapar(o);
+    if($('#groupView').classList.contains('open'))renderGroupView();
+  }
+}
 function toggleMore(id){const b=$('#mb'+id),t=$('#mt'+id);const open=b.classList.toggle('open');t.textContent=(open?'▾':'▸')+' '+(open?'Sembunyikan butiran Lampiran C':'Lengkapkan butiran Lampiran C');}
 function toggleResume(id){const el=$('#res'+id),btn=$('#tgl'+id);const open=el.classList.toggle('open');btn.textContent=open?'Sembunyikan Resume':'Lihat Resume Penuh';}
 function removeOfficer(id){const i=officers.findIndex(x=>x.id===id);if(i>=0){officers.splice(i,1);render();if(!officers.length)$('#toolbar').style.display='none';}}
@@ -1121,7 +1130,7 @@ function presSlide(o){
       <div>
         <p class="nm">${esc(o.nama)}</p>
         <div class="meta">
-          <span class="ps-tag">Gred ${esc(o.gred)}</span>
+          <span class="ps-tag">Gred ${esc(gredPapar(o))}</span>
           <span class="ps-tag brass">Bersara ${esc(o.bersara)}${o.bakiCalc?' · baki '+esc(o.bakiCalc):''}</span>
         </div>
         <div class="ps-sub">${esc(pr['No Kad Pengenalan']||'')} · ${esc(pr['Tarikh Lahir / Umur']||'')}${o.role?' · '+esc(o.role):''}</div>
@@ -1214,7 +1223,7 @@ function groupByJawatan(){
 }
 function officerBox(o,c){
   const photo=o.photo?`<img class="ob-photo" src="${o.photo}">`:`<div class="ob-photo ph">${esc(initials(o.nama))}</div>`;
-  const gredPeny=(o.lc&&o.lc.gredPenyandang&&o.lc.gredPenyandang.trim())?o.lc.gredPenyandang.trim():o.gred;
+  const gredPeny=gredPapar(o);
   const jSemasa=(o.lc&&o.lc.jawatanSemasa&&o.lc.jawatanSemasa.trim())?o.lc.jawatanSemasa:(o.role||'');
   const tSemasa=(o.lc&&o.lc.tempatSemasa&&o.lc.tempatSemasa.trim())?o.lc.tempatSemasa:'';
   const jBaru=o.jawatanBaru?`${esc(o.jawatanBaru)}${o.gredBaru?' ('+esc(o.gredBaru)+')':''}`:'<i>belum diisi</i>';
