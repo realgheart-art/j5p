@@ -312,7 +312,8 @@ body.role-pemerhati .admin-only{display:none!important}
 #resumeModal .modal-in{max-width:900px}
 @media print{body.printing .gv,body.printing #resumeModal{display:none!important}}
 @media print{
-  .print-page .ps{max-width:none;width:100%;box-shadow:none;border-radius:0;padding:0;page-break-inside:avoid}
+  .print-page .ps{max-width:none;width:100%;box-shadow:none;border-radius:0;padding:0}
+  .print-page .ps-cad,.print-page .ps-grid,.print-page .ps-card{page-break-inside:avoid;break-inside:avoid}
   .print-page .ps-head .nm{font-size:23px}
   .print-page .ps-cad{padding:12px 14px}
   .print-page .ps-card .b{padding:10px 12px;font-size:12.5px}
