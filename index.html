@@ -311,6 +311,14 @@ body.role-pemerhati .admin-only{display:none!important}
 #resumeModal{z-index:110}
 #resumeModal .modal-in{max-width:900px}
 @media print{body.printing .gv,body.printing #resumeModal{display:none!important}}
+@media print{
+  .print-page .ps{max-width:none;width:100%;box-shadow:none;border-radius:0;padding:0;page-break-inside:avoid}
+  .print-page .ps-head .nm{font-size:23px}
+  .print-page .ps-cad{padding:12px 14px}
+  .print-page .ps-card .b{padding:10px 12px;font-size:12.5px}
+  .print-page .ps-kv{grid-template-columns:140px 1fr}
+  .print-page .ps *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
 
 #printArea{display:none}
 @media print{
@@ -374,6 +382,7 @@ body.role-pemerhati .admin-only{display:none!important}
     <button class="btn brass sm admin-only" id="lampCSelBtn" type="button">📋 Lampiran C (Dipilih)</button>
     <button class="btn brass sm" id="presBtn" type="button">🎤 Pembentangan</button>
     <button class="btn brass sm" id="grpBtn" type="button">🗂️ Kumpulan Post</button>
+    <button class="btn ghost sm admin-only" id="printSlidesBtn" type="button">🖨️ Cetak Slaid</button>
     <button class="btn ghost sm" id="fsBtn" type="button">⛶ Skrin Penuh</button>
     <button class="btn ghost sm admin-only" id="printAllBtn" type="button">🖨️ Semua Resume</button>
     <button class="btn ghost sm admin-only" id="clearBtn" type="button">Kosongkan</button>
@@ -416,6 +425,7 @@ body.role-pemerhati .admin-only{display:none!important}
     <span id="presMeta"></span>
     <span class="spacer"></span>
     <span id="presCount"></span>
+    <button class="btn brass sm admin-only" onclick="printSlides()" title="Satu pegawai satu muka surat">🖨️ Cetak Slaid</button>
     <button class="pres-x" onclick="toggleFullscreen()" title="Skrin Penuh (F)">⛶</button>
     <button class="pres-x" onclick="closePres()" title="Tutup (Esc)">✕</button>
   </div>
@@ -1080,6 +1090,7 @@ function setPageStyle(o){$('#pageStyle').textContent=`@media print{@page{size:A4
 function printNode(html,orientation){setPageStyle(orientation);$('#printArea').innerHTML=html;document.body.classList.add('printing');window.print();}
 function printOfficer(id){const o=officers.find(x=>x.id===id);printNode(`<div class="print-page"><div class="doc">${resumeDoc(o)}</div></div>`,'portrait');}
 function printAll(){if(!officers.length)return;printNode(officers.map(o=>`<div class="print-page"><div class="doc">${resumeDoc(o)}</div></div>`).join(''),'portrait');}
+function printSlides(){if(!officers.length){toast('Tiada pegawai.');return;}printNode(officers.map(o=>`<div class="print-page">${presSlide(o)}</div>`).join(''),'portrait');}
 window.onafterprint=()=>document.body.classList.remove('printing');
 
 function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),2600);}
@@ -1302,6 +1313,7 @@ $('#clearBtn').onclick=()=>{officers.length=0;render();$('#toolbar').style.displ
 $('#printAllBtn').onclick=printAll;
 $('#presBtn').onclick=()=>startPresentation();
 $('#grpBtn').onclick=startGroupView;
+$('#printSlidesBtn').onclick=printSlides;
 $('#lampCSelBtn').onclick=generateLampiranCSelected;
 $('#resumeModal').addEventListener('click',e=>{if(e.target.id==='resumeModal')closeResume();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#resumeModal').classList.contains('open'))closeResume();else if($('#groupView').classList.contains('open'))closeGroupView();}});
