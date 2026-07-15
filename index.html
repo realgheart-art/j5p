@@ -267,6 +267,17 @@ body.role-pemerhati .admin-only{display:none!important}
 .ps-kv dt{color:var(--ink-soft)}
 .ps-kv dd{margin:0;font-weight:600;color:#1c2836}
 .reorder{display:inline-flex;gap:4px}
+.minit-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.minit-grid .full{grid-column:1/-1}
+@media (max-width:640px){.minit-grid{grid-template-columns:1fr}}
+.ahli-row{display:grid;grid-template-columns:1.3fr 1.3fr auto auto 38px;gap:8px;align-items:center;margin-bottom:8px}
+.ahli-row input{width:100%;font:inherit;font-size:13.5px;padding:8px 10px;border:1px solid var(--line);border-radius:8px}
+.ahli-row input:focus{outline:2px solid var(--brass-2);outline-offset:1px;border-color:var(--brass)}
+.ahli-att{font:inherit;font-size:12px;font-weight:600;border-radius:8px;padding:8px 10px;cursor:pointer;border:1px solid var(--line);white-space:nowrap}
+.ahli-att.on{background:#e6f2ec;color:#2f6b4f;border-color:#b7d9c6}
+.ahli-att.off{background:#fbeaea;color:#b32d2d;border-color:#e6b8b8}
+.ahli-tag{font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-soft);font-weight:700;text-align:center}
+@media (max-width:640px){.ahli-row{grid-template-columns:1fr 1fr auto 38px}.ahli-tag{display:none}}
 .reorder button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer;font-size:15px;font-weight:700}
 .reorder button:hover{border-color:var(--brass);background:#fff9ec}
 .reorder button:disabled{opacity:.35;cursor:not-allowed}
@@ -381,6 +392,7 @@ body.role-pemerhati .admin-only{display:none!important}
     <button class="btn brass sm admin-only" id="lampCBtn" type="button">📋 Lampiran C (Gabungan)</button>
     <button class="btn brass sm admin-only" id="lampCIndBtn" type="button">📋 Lampiran C (Individu)</button>
     <button class="btn brass sm admin-only" id="lampCSelBtn" type="button">📋 Lampiran C (Dipilih)</button>
+    <button class="btn brass sm admin-only" id="minitBtn" type="button">📝 Minit Mesyuarat</button>
     <button class="btn brass sm" id="presBtn" type="button">🎤 Pembentangan</button>
     <button class="btn brass sm" id="grpBtn" type="button">🗂️ Kumpulan Post</button>
     <button class="btn ghost sm admin-only" id="printSlidesBtn" type="button">🖨️ Cetak Slaid</button>
@@ -415,6 +427,18 @@ body.role-pemerhati .admin-only{display:none!important}
       <button class="btn ghost sm" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="closeRec()">Tutup</button>
     </div>
     <div class="modal-body" id="recList" style="background:#fff;padding:14px"></div>
+  </div>
+</div>
+
+<div class="modal" id="minitModal">
+  <div class="modal-in" style="max-width:780px">
+    <div class="modal-bar">
+      <b>📝 Minit Mesyuarat</b>
+      <span class="spacer"></span>
+      <button class="btn brass sm" onclick="generateMinitDocx()">⬇️ Jana Minit (.docx)</button>
+      <button class="btn ghost sm" style="color:#fff;border-color:rgba(255,255,255,.3)" onclick="closeMinit()">Tutup</button>
+    </div>
+    <div class="modal-body" id="minitBody" style="background:#fff;padding:18px"></div>
   </div>
 </div>
 
@@ -630,7 +654,7 @@ async function handleFiles(fileList){
         photo:read.photo&&!read.photo.likelyEmpty?read.photo.dataUrl:null,
         photoAuto:read.photo&&!read.photo.likelyEmpty,
         /* cadangan teras */
-        jawatanBaru:'',gredBaru:'',tempatBaru:'',selected:false,
+        jawatanBaru:'',gredBaru:'',tempatBaru:'',selected:false,keputusan:'',
         /* butiran lanjut Lampiran C (default berpandukan CV) */
         lc:{
           gredPenyandang:data.meta.gred||'',
@@ -781,6 +805,14 @@ function renderCards(){
           ${fldCore('Jawatan Baharu',o.jawatanBaru,o.id,'jawatanBaru')}
           ${fldCore('Gred Jawatan',o.gredBaru,o.id,'gredBaru')}
           ${fldCore('Tempat Bertugas Baharu',o.tempatBaru,o.id,'tempatBaru')}
+        </div>
+        <div class="field" style="margin-top:12px;max-width:360px"><label>Keputusan Mesyuarat</label>
+          <select onchange="setCore(${o.id},'keputusan',this.value)">
+            <option value=""${!o.keputusan?' selected':''}>— Belum diputuskan —</option>
+            <option${o.keputusan==='Diluluskan'?' selected':''}>Diluluskan</option>
+            <option${o.keputusan==='Ditangguh'?' selected':''}>Ditangguh</option>
+            <option${o.keputusan==='Tidak Diluluskan'?' selected':''}>Tidak Diluluskan</option>
+          </select>
         </div>
       </div>
 
@@ -1316,6 +1348,169 @@ function generateLampiranCSelected(){
   openLC(`<div class="print-page">${lampiranCDoc(sel)}</div>`,`Lampiran C — Pegawai Dipilih (${sel.length})`);
 }
 
+/* ============================================================ MINIT MESYUARAT (.docx) ============================================================ */
+function ensureMinit(){
+  if(!docCfg.minit)docCfg.minit={};
+  const m=docCfg.minit,def=(k,v)=>{if(m[k]===undefined)m[k]=v;};
+  def('tarikh','');def('masaMula','');def('masaTamat','');def('tempat','');
+  def('pengerusi','');def('penangguhan','');
+  def('urusetia',docCfg.disediakanNama||'');
+  def('perutusan','');def('berbangkit','');def('halLain','');
+  def('disediakanNama',docCfg.disediakanNama||'');def('disediakanJawatan','Setiausaha / Urus Setia J5P');
+  def('disahkanNama','');def('disahkanJawatan','Pengerusi Mesyuarat J5P');
+  if(!Array.isArray(m.ahli))m.ahli=getRoster().map(r=>({nama:r.nama,jawatan:r.jawatan,hadir:true,tetap:true}));
+  return m;
+}
+function setMinit(k,v){ensureMinit();docCfg.minit[k]=v;}
+/* Senarai Ahli Tetap (roster) disimpan dalam pelayar untuk guna semula setiap mesyuarat */
+function getRoster(){try{return JSON.parse(localStorage.getItem('j5p_roster')||'[]');}catch(e){return[];}}
+function saveRoster(r){try{localStorage.setItem('j5p_roster',JSON.stringify(r));}catch(e){}}
+function ahliRowsHTML(){
+  const m=ensureMinit();
+  if(!m.ahli.length)return '<div style="color:#a79c86;font-style:italic;font-size:13px;margin-bottom:8px">Belum ada ahli. Tambah di bawah, atau tetapkan Senarai Tetap Lalai.</div>';
+  return m.ahli.map((a,i)=>`<div class="ahli-row">
+    <input value="${esc(a.nama)}" oninput="minitAhliSet(${i},'nama',this.value)" placeholder="Nama">
+    <input value="${esc(a.jawatan)}" oninput="minitAhliSet(${i},'jawatan',this.value)" placeholder="Jawatan / Peranan">
+    <button class="ahli-att ${a.hadir?'on':'off'}" onclick="minitAhliToggle(${i})">${a.hadir?'✓ Hadir':'✗ Tidak Hadir'}</button>
+    <span class="ahli-tag">${a.tetap?'Tetap':'Tambahan'}</span>
+    <button class="pk-del" onclick="minitAhliDel(${i})" title="Buang">✕</button>
+  </div>`).join('');
+}
+function renderMinitAhli(){$('#minitAhli').innerHTML=ahliRowsHTML();}
+function minitAhliSet(i,key,val){ensureMinit();const a=docCfg.minit.ahli;if(a[i])a[i][key]=val;}
+function minitAhliToggle(i){ensureMinit();const a=docCfg.minit.ahli;if(a[i]){a[i].hadir=!a[i].hadir;renderMinitAhli();}}
+function minitAhliAdd(tetap){ensureMinit();docCfg.minit.ahli.push({nama:'',jawatan:'',hadir:true,tetap:!!tetap});renderMinitAhli();}
+function minitAhliDel(i){ensureMinit();docCfg.minit.ahli.splice(i,1);renderMinitAhli();}
+function saveRosterFromMinit(){ensureMinit();const r=docCfg.minit.ahli.filter(a=>a.tetap&&(a.nama||'').trim()).map(a=>({nama:a.nama,jawatan:a.jawatan}));saveRoster(r);toast(`Senarai Tetap Lalai dikemas kini (${r.length} ahli).`);}
+function openMinit(){renderMinitForm();$('#minitModal').classList.add('open');}
+function closeMinit(){$('#minitModal').classList.remove('open');}
+function renderMinitForm(){
+  const m=ensureMinit();
+  const sel=officers.filter(o=>o.selected).length;
+  const inp=(label,key,ph='')=>`<div class="field"><label>${label}</label><input value="${esc(m[key]||'')}" oninput="setMinit('${key}',this.value)" placeholder="${esc(ph)}"></div>`;
+  const ta=(label,key,ph='')=>`<div class="field full"><label>${label}</label><textarea oninput="setMinit('${key}',this.value)" placeholder="${esc(ph)}">${esc(m[key]||'')}</textarea></div>`;
+  $('#minitBody').innerHTML=`
+    <div style="background:#faf7f0;border-left:3px solid var(--brass);border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--ink-soft)">
+      Agenda minit memuatkan <b>${sel} pegawai Dipilih</b> automatik (nama, cadangan, justifikasi &amp; keputusan). Tandakan "Dipilih" &amp; "Keputusan Mesyuarat" pada setiap pegawai dahulu.
+    </div>
+    <div class="subgrp" style="margin-top:0">Maklumat Mesyuarat</div>
+    <div class="minit-grid">
+      ${inp('Tarikh Mesyuarat','tarikh','cth: 15 Ogos 2026')}
+      ${inp('Tempat','tempat','cth: Bilik Mesyuarat Utama, JPN Kedah')}
+      ${inp('Masa Mula','masaMula','cth: 9:00 pagi')}
+      ${inp('Masa Tamat','masaTamat','cth: 12:30 tengah hari')}
+      ${inp('Pengerusi','pengerusi','Nama pengerusi')}
+      ${inp('Masa Penangguhan','penangguhan','cth: 12:30 tengah hari')}
+    </div>
+    <div class="subgrp">Ahli Jawatankuasa &amp; Kehadiran</div>
+    <div id="minitAhli">${ahliRowsHTML()}</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px">
+      <button class="pk-add" onclick="minitAhliAdd(true)">＋ Ahli Tetap</button>
+      <button class="pk-add" onclick="minitAhliAdd(false)">＋ Ahli Tambahan</button>
+      <button class="pk-add" style="color:var(--navy)" onclick="saveRosterFromMinit()">⭐ Jadikan Senarai Tetap Lalai</button>
+    </div>
+    <div class="minit-grid" style="margin-top:16px">
+      ${ta('Urus Setia (satu sebaris)','urusetia','')}
+      ${ta('Perutusan Pengerusi (opsyenal)','perutusan','')}
+      ${ta('Perkara Berbangkit (opsyenal)','berbangkit','')}
+      ${ta('Hal-Hal Lain (satu perkara sebaris)','halLain','')}
+    </div>
+    <div class="subgrp">Pengesahan Minit</div>
+    <div class="minit-grid">
+      ${inp('Disediakan oleh — Nama','disediakanNama','')}
+      ${inp('Disediakan oleh — Jawatan','disediakanJawatan','')}
+      ${inp('Disahkan oleh — Nama','disahkanNama','')}
+      ${inp('Disahkan oleh — Jawatan','disahkanJawatan','')}
+    </div>`;
+}
+function loadDocx(){
+  return new Promise((res,rej)=>{
+    if(typeof docx!=='undefined')return res();
+    const s=document.createElement('script');
+    s.src='https://unpkg.com/docx@8.5.0/build/index.umd.js';
+    s.onload=()=>res();s.onerror=()=>rej(new Error('Gagal memuat pustaka DOCX'));
+    document.head.appendChild(s);
+  });
+}
+async function generateMinitDocx(){
+  try{setStatus('Memuat pustaka DOCX…');await loadDocx();setStatus('');}
+  catch(e){setStatus('');toast('Gagal memuat pustaka DOCX. Semak sambungan internet.');return;}
+  const D=docx,FONT='Arial',sz=n=>n*2;
+  const m=ensureMinit();
+  const bil=$('#mBil').value.trim()||'—',tahun=$('#mTahun').value.trim()||'—';
+  const run=(t,s=11,b=false)=>new D.TextRun({text:t==null?'':String(t),font:FONT,size:sz(s),bold:b});
+  const para=(runs,o={})=>new D.Paragraph({spacing:{after:100},...o,children:Array.isArray(runs)?runs:[runs]});
+  const heading=t=>new D.Paragraph({spacing:{before:220,after:110},children:[run(t,12,true)]});
+  const K=[];
+  // Tajuk
+  K.push(para(run('MINIT MESYUARAT',14,true),{alignment:D.AlignmentType.CENTER,spacing:{after:40}}));
+  K.push(para(run('JAWATANKUASA PENGESANAN DAN PENGESAHAN',12,true),{alignment:D.AlignmentType.CENTER,spacing:{after:40}}));
+  K.push(para(run('PEGAWAI PERKHIDMATAN PENDIDIKAN (J5P)',12,true),{alignment:D.AlignmentType.CENTER,spacing:{after:40}}));
+  K.push(para(run(`BIL. ${bil} TAHUN ${tahun}  ·  JABATAN PENDIDIKAN NEGERI KEDAH`,11,true),{alignment:D.AlignmentType.CENTER,spacing:{after:200}}));
+  // 1 Maklumat
+  K.push(heading('1.  MAKLUMAT MESYUARAT'));
+  [['Tarikh',m.tarikh],['Masa',(m.masaMula||'')+(m.masaTamat?' hingga '+m.masaTamat:'')],['Tempat',m.tempat],['Pengerusi',m.pengerusi]]
+    .forEach(([k,v])=>K.push(para([run(k+' : ',11,true),run(v||'-')],{spacing:{after:40},indent:{left:300}})));
+  // 2 Kehadiran (dari senarai ahli jawatankuasa)
+  K.push(heading('2.  KEHADIRAN'));
+  const asLines=v=>Array.isArray(v)?v:(v||'').split('\n');
+  const listBlock=(label,v)=>{
+    K.push(para(run(label,11,true),{spacing:{before:80,after:40},indent:{left:300}}));
+    const lines=asLines(v).map(s=>String(s).trim()).filter(Boolean);
+    if(!lines.length)K.push(para(run('Tiada'),{indent:{left:600}}));
+    else lines.forEach((ln,i)=>K.push(para(run(`${i+1}.  ${ln}`),{spacing:{after:20},indent:{left:600}})));
+  };
+  if(!Array.isArray(m.ahli))m.ahli=getRoster().map(r=>({nama:r.nama,jawatan:r.jawatan,hadir:true,tetap:true}));
+  const fmtAhli=a=>a.nama+(a.jawatan?' - '+a.jawatan:'');
+  listBlock('Ahli Hadir:',m.ahli.filter(a=>a.hadir&&(a.nama||'').trim()).map(fmtAhli));
+  listBlock('Ahli Tidak Hadir:',m.ahli.filter(a=>!a.hadir&&(a.nama||'').trim()).map(fmtAhli));
+  listBlock('Urus Setia:',m.urusetia);
+  // 3 Perutusan / berbangkit (opsyenal)
+  let no=3;
+  if((m.perutusan||'').trim()){K.push(heading(`${no++}.  PERUTUSAN PENGERUSI`));m.perutusan.split('\n').filter(s=>s.trim()).forEach(s=>K.push(para(run(s),{indent:{left:300}})));}
+  if((m.berbangkit||'').trim()){K.push(heading(`${no++}.  PERKARA BERBANGKIT`));m.berbangkit.split('\n').filter(s=>s.trim()).forEach(s=>K.push(para(run(s),{indent:{left:300}})));}
+  // Agenda: pegawai dipilih
+  K.push(heading(`${no++}.  CADANGAN PENEMPATAN / PERGERAKAN PEGAWAI (PEGAWAI DIPILIH)`));
+  const selO=officers.filter(o=>o.selected);
+  if(!selO.length)K.push(para(run('Tiada pegawai ditandakan "Dipilih".'),{indent:{left:300}}));
+  else selO.forEach((o,i)=>{
+    ensureLc(o);const L=o.lc;
+    K.push(para(run(`${i+1}.  ${o.nama}`,11,true),{spacing:{before:140,after:40},indent:{left:300}}));
+    const line=(k,v)=>K.push(para([run(k+': ',11,true),run(v||'-')],{spacing:{after:20},indent:{left:600}}));
+    line('No. Kad Pengenalan',(o.data&&o.data.peribadi&&o.data.peribadi['No Kad Pengenalan'])||'-');
+    line('Gred Penyandang',gredPapar(o));
+    line('Jawatan Semasa',(L.jawatanSemasa||o.role||'-'));
+    line('Cadangan Jawatan Baharu',(o.jawatanBaru||'-')+(o.gredBaru?' ('+o.gredBaru+')':''));
+    line('Tempat Bertugas Baharu',o.tempatBaru||'-');
+    line('Justifikasi',L.justifikasi||'-');
+    line('Keputusan Mesyuarat',o.keputusan||'-');
+  });
+  // Hal lain
+  if((m.halLain||'').trim()){K.push(heading(`${no++}.  HAL-HAL LAIN`));m.halLain.split('\n').filter(s=>s.trim()).forEach((s,i)=>K.push(para(run(`${i+1}.  ${s}`),{spacing:{after:20},indent:{left:600}})));}
+  // Penangguhan
+  K.push(heading(`${no++}.  PENANGGUHAN`));
+  K.push(para(run(`Mesyuarat ditangguhkan pada ${m.penangguhan||'-'}.`),{indent:{left:300}}));
+  // Tandatangan
+  K.push(para(run(''),{spacing:{before:500}}));
+  const sign=(label,nama,jawatan)=>{
+    K.push(para(run(label),{spacing:{after:0}}));
+    K.push(para(run('.......................................................'),{spacing:{before:520,after:0}}));
+    K.push(para(run(nama||'',11,true),{spacing:{after:0}}));
+    K.push(para(run(jawatan||''),{spacing:{after:240}}));
+  };
+  sign('Disediakan oleh,',m.disediakanNama,m.disediakanJawatan);
+  sign('Disahkan oleh,',m.disahkanNama,m.disahkanJawatan);
+
+  const doc=new D.Document({sections:[{properties:{page:{margin:{top:1134,bottom:1134,left:1300,right:1134}}},children:K}]});
+  try{
+    const blob=await D.Packer.toBlob(doc);
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+    a.download=`Minit J5P Bil ${bil} Tahun ${tahun}.docx`;
+    document.body.appendChild(a);a.click();a.remove();
+    toast(`Minit dijana (${selO.length} pegawai dipilih).`);
+  }catch(e){toast('Ralat menjana minit: '+e.message);}
+}
+
 /* ============================================================ WIRING ============================================================ */
 const drop=$('#drop');
 $('#pickBtn').onclick=()=>$('#fileInput').click();
@@ -1330,6 +1525,8 @@ $('#presBtn').onclick=()=>startPresentation();
 $('#grpBtn').onclick=startGroupView;
 $('#printSlidesBtn').onclick=printSlides;
 $('#lampCSelBtn').onclick=generateLampiranCSelected;
+$('#minitBtn').onclick=openMinit;
+$('#minitModal').addEventListener('click',e=>{if(e.target.id==='minitModal')closeMinit();});
 $('#resumeModal').addEventListener('click',e=>{if(e.target.id==='resumeModal')closeResume();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#resumeModal').classList.contains('open'))closeResume();else if($('#groupView').classList.contains('open'))closeGroupView();}});
 $('#fsBtn').onclick=toggleFullscreen;
